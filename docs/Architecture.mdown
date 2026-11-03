@@ -43,6 +43,7 @@ Official resources:
 - [QEMU](https://www.qemu.org/?utm_source=chatgpt.com)
 - [FreeBSD](https://www.freebsd.org/?utm_source=chatgpt.com)
 - [FreeBSD 14.5 RISC-V images](https://download.freebsd.org/releases/riscv/riscv64/ISO-IMAGES/14.5/?utm_source=chatgpt.com)
+![image.png](https://images.openai.com/static-rsc-4/6QmU4qwvhz7YFmX9pfHi7BN4b4tdkh1U_mM8ctlLHL7ZJUEb9TtnhHTD97XUZ2qgeUVqxqe84Uu9dEb-iM89K1vP6Nsz-6c5qFRecToZfqgL5av7n8zRN5pGwRXOr6VzV3dO18aaEusspeBqvcBdqgLGA1O8ppZFtg_zXmY5lrg?purpose=inline)
 
 ## 3. Installation on a Linux computer
 
