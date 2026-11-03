@@ -11,22 +11,16 @@ section "QEMU"
 if command -v qemu-system-riscv64 >/dev/null 2>&1; then
   qemu-system-riscv64 --version
   echo
-  qemu-system-riscv64 -machine help 2>&1 | grep -E '(^|[[:space:]])virt([[:space:]]|$)' || {
-    echo "No 'virt' machine entry was detected."
-  }
+  qemu-system-riscv64 -machine help 2>&1 | grep -E '(^|[[:space:]])virt([[:space:]]|$)' || echo "No 'virt' machine entry was detected."
 else
   echo "qemu-system-riscv64 is not installed."
 fi
 
 section "Firmware candidates"
-find /usr/share -type f \\
-  \\( -iname '*riscv*.fd' -o -iname '*riscv*code*' -o -iname '*riscv*vars*' \\) \\
-  -print 2>/dev/null | sort || true
+find /usr/share -type f \( -iname '*riscv*.fd' -o -iname '*riscv*code*' -o -iname '*riscv*vars*' \) -print 2>/dev/null | sort || true
 
 section "FreeBSD RISC-V images in workspace"
-find . -maxdepth 3 -type f \\
-  \\( -iname '*FreeBSD*14.5*riscv*' -o -iname '*.iso' -o -iname '*.img.xz' \\) \\
-  -print 2>/dev/null | sort || true
+find . -maxdepth 3 -type f \( -iname '*FreeBSD*14.5*riscv*' -o -iname '*.iso' -o -iname '*.img.xz' \) -print 2>/dev/null | sort || true
 
 section "Tool availability"
 for tool in qemu-img xz curl wget file fdisk; do
