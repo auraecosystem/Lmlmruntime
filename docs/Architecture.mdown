@@ -1,0 +1,163 @@
+# Recommended LMLM RISC-V setup — zero hardware, low budget
+
+My recommendation is to start with QEMU and FreeBSD 14.5 RISC-V 64-bit, rather than buying a development board immediately.
+
+This gives you a way to investigate the RISC-V architecture, boot FreeBSD, develop system services and test LMLM's execution adapters without spending money on physical hardware.
+
+Recommended starting point: QEMU + FreeBSD
+
+## 1. Your proposed architecture
+
+LMLM Core
+
+Reasoning · Models · Agent orchestration
+
+LMLM RISC-V Adapter
+
+Command interface · RPC · Policy enforcement
+
+QEMU RISC-V 64-bit
+
+Virtual hardware
+
+FreeBSD 14.5
+
+Kernel · Networking · Filesystem · Services
+
+The important architectural decision is to keep LMLM's control plane independent of the operating system running on an execution node.
+
+## 2. Software you need
+
+| Component    | Purpose                       | Cost |
+| ------------ | ----------------------------- | ---- |
+| QEMU         | RISC-V emulation              | Free |
+| FreeBSD 14.5 | Guest operating system        | Free |
+| OpenSSH      | Remote administration         | Free |
+| Git          | Source control                | Free |
+| Python / Go  | Agent and adapter development | Free |
+
+Official resources:
+
+- [QEMU](https://www.qemu.org/?utm_source=chatgpt.com)
+- [FreeBSD](https://www.freebsd.org/?utm_source=chatgpt.com)
+- [FreeBSD 14.5 RISC-V images](https://download.freebsd.org/releases/riscv/riscv64/ISO-IMAGES/14.5/?utm_source=chatgpt.com)
+
+## 3. Installation on a Linux computer
+
+If you have access to Ubuntu or Debian:
+
+Install QEMU and supporting tools
+
+```
+sudo apt update
+
+sudo apt install -y \
+  qemu-system-misc \
+  opensbi \
+  xz-utils \
+  wget \
+  git
+```
+
+Check that RISC-V emulation is available:
+
+```
+qemu-system-riscv64 --version
+```
+
+Check supported machine configurations:
+
+```
+qemu-system-riscv64 -machine help
+```
+
+Look for `virt`.
+
+## 4. Download FreeBSD
+
+```
+mkdir -p ~/lmlm-riscv
+cd ~/lmlm-riscv
+
+wget https://download.freebsd.org/releases/riscv/riscv64/ISO-IMAGES/14.5/FreeBSD-14.5-RELEASE-riscv-riscv64-GENERICSD.img.xz
+```
+
+Extract:
+
+```
+xz -dk FreeBSD-14.5-RELEASE-riscv-riscv64-GENERICSD.img.xz
+```
+
+Inspect the image:
+
+```
+file FreeBSD-14.5-RELEASE-riscv-riscv64-GENERICSD.img
+
+fdisk -l FreeBSD-14.5-RELEASE-riscv-riscv64-GENERICSD.img
+```
+
+Compatibility note: GENERICSD is a board-oriented disk image, not a guarantee of bootability on QEMU's generic `virt` machine. We should inspect its boot partitions and firmware requirements before attempting to boot it. Don't assume the image can be attached to QEMU and booted directly.
+
+## 5. Initial LMLM development objectives
+
+I would build the following capabilities in stages:
+
+| Phase | Objective                                    |
+| ----- | -------------------------------------------- |
+| 1     | Boot FreeBSD RISC-V                          |
+| 2     | Establish SSH administration                 |
+| 3     | Build a Go-based LMLM execution agent        |
+| 4     | Implement authenticated RPC communication    |
+| 5     | Add resource and hardware monitoring         |
+| 6     | Implement policy-controlled remote execution |
+| 7     | Test reliability and security                |
+
+The first milestone should be a working FreeBSD RISC-V guest that can communicate with LMLM.
+
+## 6. Suggested development resources
+
+[Wis TechnoSavvy Pvt. Ltd](https://images.openai.com/static-rsc-4/6QmU4qwvhz7YFmX9pfHi7BN4b4tdkh1U_mM8ctlLHL7ZJUEb9TtnhHTD97XUZ2qgeUVqxqe84Uu9dEb-iM89K1vP6Nsz-6c5qFRecToZfqgL5av7n8zRN5pGwRXOr6VzV3dO18aaEusspeBqvcBdqgLGA1O8ppZFtg_zXmY5lrg?purpose=inline)
+
+FreeBSD
+
+[Official installation resources](https://www.freebsd.org/where/?utm_source=chatgpt.com)
+
+[Google](https://images.openai.com/static-rsc-4/M70c_1gKSQsXlErn2R4NUI068bI0AF2hIRUakDQYYh_ShLlGa4DmOKFknWalCzUlGEjdBM6t7MaDvx8so2dV7ieaW91CuHeM8TZ46AzoVP5-gWD_dUz96_ZoEYh8XEWpedxB3IjUz80agRuXw6i9HqRQblaLfp1ATRlJRSQBejw?purpose=inline)
+
+QEMU
+
+[RISC-V system emulation documentation](https://www.qemu.org/docs/master/system/target-riscv.html?utm_source=chatgpt.com)
+
+[RISC-V International](https://images.openai.com/static-rsc-4/lOAJJ24fC1Yvf8JP9e3JzBcfjwPxMNElKOTdJWb0l8cIDsarbGr4uv5ERDJ4c6k908CCErbb17eIKdIkLjv02ygWadr_fq9tEPHqGSfsLmzQ7fPRAmqwDSVfgYwYGyx3UFs1d2NjKr9xrADfT_RQEnQb36oK5y3OKXo-A76kVqI?purpose=inline)
+
+RISC-V
+
+[Official RISC-V resources](https://riscv.org/?utm_source=chatgpt.com)
+
+## 7. One decision before proceeding
+
+Since you're starting without physical hardware, I need to establish your available development environment.
+
+Which computer environment can you access?
+
+iPhone only
+
+Windows PC
+
+Ubuntu/Linux PC
+
+Mac
+
+Remote cloud server
+
+What should we build first?
+
+FreeBSD RISC-V virtual machine
+
+LMLM RISC-V execution node
+
+Complete LMLM FreeBSD environment
+
+Continue
+
+My long-term direction: Make FreeBSD one supported LMLM execution environment, not a dependency of LMLM itself. That way, LMLM can eventually coordinate Linux, FreeBSD, Windows and RISC-V devices through controlled adapters.
