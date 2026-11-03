@@ -48,7 +48,7 @@ If you have access to Ubuntu or Debian:
 
 Install QEMU and supporting tools
 
-```
+```bash
 sudo apt update
 
 sudo apt install -y \
@@ -61,13 +61,13 @@ sudo apt install -y \
 
 Check that RISC-V emulation is available:
 
-```
+```cmd
 qemu-system-riscv64 --version
 ```
 
 Check supported machine configurations:
 
-```
+```cmd
 qemu-system-riscv64 -machine help
 ```
 
@@ -75,7 +75,7 @@ Look for `virt`.
 
 ## 4. Download FreeBSD
 
-```
+```cmd
 mkdir -p ~/lmlm-riscv
 cd ~/lmlm-riscv
 
@@ -84,13 +84,13 @@ wget https://download.freebsd.org/releases/riscv/riscv64/ISO-IMAGES/14.5/FreeBSD
 
 Extract:
 
-```
+```cmd
 xz -dk FreeBSD-14.5-RELEASE-riscv-riscv64-GENERICSD.img.xz
 ```
 
 Inspect the image:
 
-```
+```dd
 file FreeBSD-14.5-RELEASE-riscv-riscv64-GENERICSD.img
 
 fdisk -l FreeBSD-14.5-RELEASE-riscv-riscv64-GENERICSD.img
@@ -329,7 +329,7 @@ qemu-system-riscv64 \
 
 Inside FreeBSD, run:
 
-```uv
+```console
 uname -a
 uname -m
 sysctl hw.ncpu
@@ -342,15 +342,15 @@ The architecture should report `riscv64`.
 
 Once FreeBSD boots, we can build the execution adapter in stages:
 
-LMLM Core
+# LMLM Core
 
 Policy, orchestration, task management
 
-LMLM RISC-V Adapter
+# LMLM RISC-V Adapter
 
 Authenticated communication and execution interface
 
-QEMU RISC-V 64-bit
+'QEMU RISC-V 64-bit'
 
 Virtual hardware and machine emulation
 
@@ -373,3 +373,48 @@ find /usr/share -type f -iname '*riscv*.fd' 2>/dev/null
 Also send the release directory listing.
 
 I want to verify the actual QEMU machine and firmware available in your Codespace before asking you to launch the VM. That prevents us from wasting your limited Codespaces time on an incompatible boot configuration.
+This is the repository we should use as the starting point for the LMLM runtime work:
+
+[auraecosystem/Lmlmruntime](https://github.com/auraecosystem/Lmlmruntime?utm_source=chatgpt.com)
+
+I checked its `main` branch README. It currently contains only the project heading, `Lmlmruntime`, so I cannot yet verify its implementation, dependencies, or existing runtime architecture.
+
+### Proposed implementation objective
+
+Use this repository to establish a virtualised FreeBSD RISC-V execution target, controlled from your iPhone through GitHub Codespaces.
+
+| Component      | Responsibility                    |
+| -------------- | --------------------------------- |
+| Lmlmruntime    | Runtime orchestration             |
+| QEMU           | RISC-V virtual machine            |
+| FreeBSD 14.5   | Guest operating system            |
+| RISC-V adapter | Guest communication and execution |
+| Codespaces     | Cloud development environment     |
+
+### Proposed repository structure
+
+```cmd
+Lmlmruntime/
+├── runtime/
+│   ├── core/
+│   ├── adapters/
+│   │   └── riscv/
+│   └── execution/
+├── virtualization/
+│   └── qemu/
+│       ├── scripts/
+│       ├── config/
+│       └── images/
+├── guests/
+│   └── freebsd/
+│       └── riscv64/
+├── tests/
+├── docs/
+└── .devcontainer/
+```
+
+This is a proposed structure, not a description of existing files. We should preserve existing functionality rather than replace the repository with a new scaffold.
+
+One decision: Should I make `Lmlmruntime` the actual implementation home for the FreeBSD RISC-V virtualisation work, with QEMU as its first virtual machine backend?
+
+> My recommendation is yes.
