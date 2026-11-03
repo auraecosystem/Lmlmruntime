@@ -91,9 +91,9 @@ Extract:
 xz -dk FreeBSD-14.5-RELEASE-riscv-riscv64-GENERICSD.img.xz
 ```
 
-Inspect the image:
+# Inspect the image:
 
-```dd
+```cmd
 file FreeBSD-14.5-RELEASE-riscv-riscv64-GENERICSD.img
 
 fdisk -l FreeBSD-14.5-RELEASE-riscv-riscv64-GENERICSD.img
@@ -318,7 +318,7 @@ If it does not boot, record the first error and stop. The next step will depend 
 
 After a successful installation, restart QEMU without the ISO attached:
 
-```bash
+```dd
 qemu-system-riscv64 \
   -machine virt \
   -cpu rv64 \
@@ -396,7 +396,7 @@ Use this repository to establish a virtualised FreeBSD RISC-V execution target, 
 
 ### Proposed repository structure
 
-```cmd
+```bash
 Lmlmruntime/
 ├── runtime/
 │   ├── core/
@@ -421,3 +421,45 @@ This is a proposed structure, not a description of existing files. We should pre
 One decision: Should I make `Lmlmruntime` the actual implementation home for the FreeBSD RISC-V virtualisation work, with QEMU as its first virtual machine backend?
 
 > My recommendation is yes.
+Confirmed. `auraecosystem/Lmlmruntime` will be the implementation home for the FreeBSD RISC-V virtualisation work, with QEMU as the first VM backend.
+
+I inspected the current `main` branch. It contains:
+
+- `README.md` — currently only a project heading.
+- `Playground.virt` — a four-byte placeholder.
+- `docs/Architecture.mdown` — an existing 10 KB architecture and setup guide.
+
+I’ll preserve the existing architecture document and build on the repository’s actual contents, rather than replacing it with a speculative structure.
+
+Committed to GitHub
+
+Changes now on `main`:
+
+| File                              | Purpose                                      |
+| --------------------------------- | -------------------------------------------- |
+| `README.md`                       | Defines the runtime's purpose and milestones |
+| `.devcontainer/devcontainer.json` | Codespaces environment                       |
+| `.devcontainer/setup.sh`          | Installs QEMU and RISC-V tools               |
+| `scripts/check-riscv-env.sh`      | Checks QEMU, firmware and available images   |
+
+Repository: [Lmlmruntime](https://github.com/auraecosystem/Lmlmruntime?utm_source=chatgpt.com)
+
+The existing `docs/Architecture.mdown` and `Playground.virt` were preserved.
+
+What has not happened yet: No VM has been booted, and no FreeBSD installation has been verified. The diagnostic script has been committed and its contents checked, but it has not been executed in Codespaces.
+
+### Your next step — using your iPhone
+
+1. Open [Lmlmruntime](https://github.com/auraecosystem/Lmlmruntime?utm_source=chatgpt.com).
+2. Open the green Code menu.
+3. Select Codespaces → Create codespace on main.
+4. Wait for the environment to finish building.
+5. Run:
+
+```console
+bash scripts/check-riscv-env.sh
+```
+
+Send me the complete terminal output.
+
+Our first objective is to verify the RISC-V virtual hardware and firmware before attempting the FreeBSD boot.
