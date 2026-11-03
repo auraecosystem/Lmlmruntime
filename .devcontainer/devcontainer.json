@@ -1,0 +1,6 @@
+{
+  "name": "Lmlmruntime RISC-V lab",
+  "image": "mcr.microsoft.com/devcontainers/base:ubuntu",
+  "postCreateCommand": "bash .devcontainer/setup.sh",
+  "remoteUser": "vscode"
+}
