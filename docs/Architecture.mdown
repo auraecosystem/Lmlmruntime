@@ -1,6 +1,8 @@
-# Recommended LMLM RISC-V setup — zero hardware, low budget
+# Recommended LMLM RISC-V setup — zero hardware, low bud
 
-My recommendation is to start with QEMU and FreeBSD 14.5 RISC-V 64-bit, rather than buying a development board immediately.
+[download](ghttps://download.freebsd.org/releases/riscv/riscv64/ISO-IMAGES/14.5/CHECKSUM.SHA512-FreeBSD-14.5-RELEASE-riscv-riscv64-GENERICSD)
+
+set My recommendation is to start with QEMU and FreeBSD 14.5 RISC-V 64-bit, rather than buying a development board immediately.
 
 This gives you a way to investigate the RISC-V architecture, boot FreeBSD, develop system services and test LMLM's execution adapters without spending money on physical hardware.
 
