@@ -158,6 +158,218 @@ LMLM RISC-V execution node
 
 Complete LMLM FreeBSD environment
 
-Continue
+# Continue
 
 My long-term direction: Make FreeBSD one supported LMLM execution environment, not a dependency of LMLM itself. That way, LMLM can eventually coordinate Linux, FreeBSD, Windows and RISC-V devices through controlled adapters.
+# Run FreeBSD RISC-V using your iPhone only
+
+The most practical route is to use your iPhone as the control device and run the RISC-V virtual machine in a cloud development environment.
+
+My recommendation: GitHub Codespaces + QEMU.
+
+This avoids buying hardware, avoids trying to force a full virtual machine to run locally on iOS, and gives us a Linux environment where we can install QEMU, inspect the FreeBSD image and troubleshoot the boot process.
+
+One important correction before we start: the `GENERICSD.img.xz` image you linked is a board-oriented disk image. It is not automatically compatible with QEMU's generic `virt` machine. We should first try the FreeBSD RISC-V installation media, then use the SD image only if its boot firmware and target hardware match.
+
+## 1. Prepare your iPhone
+
+1. Open [GitHub](https://github.com/auraecosystem/lmlmruntime?utm_source=chatgpt.com) in Safari or Chrome.
+2. Sign in or create a GitHub account.
+3. Open [GitHub Codespaces](https://github.com/codespaces?utm_source=chatgpt.com).
+4. Create a new blank repository named `freebsd-riscv-lab`.
+5. Create a Codespace for that repository.
+6. Open its browser-based terminal.
+
+Codespaces availability and free usage depend on your account's current quota. You do not need to install Linux or QEMU on the iPhone itself.
+
+## 2. Install the RISC-V virtualisation tools
+
+In the Codespaces terminal, run:
+
+```bash
+sudo apt-get update
+
+sudo apt-get install -y \
+  qemu-system-misc \
+  opensbi \
+  qemu-efi-riscv64 \
+  xz-utils \
+  wget \
+  curl \
+  file \
+  fdisk
+```
+
+Check that QEMU supports RISC-V:
+
+```bash
+qemu-system-riscv64 --version
+qemu-system-riscv64 -machine help
+```
+
+You should see a machine named `virt` in the machine list.
+
+Check for RISC-V UEFI firmware:
+
+```bash
+find /usr/share -type f \
+  \( -iname '*riscv*code*.fd' -o -iname '*riscv*.fd' \) \
+  2>/dev/null
+```
+
+We need compatible firmware to boot installation media through UEFI. If the package or firmware is unavailable, don't substitute an unrelated firmware image.
+
+## 3. Inspect the FreeBSD 14.5 release files
+
+Set the release directory:
+
+```env
+export BASE="https://download.freebsd.org/releases/riscv/riscv64/ISO-IMAGES/14.5"
+```
+
+List the available RISC-V installation images:
+
+```bash
+curl -fsSL "$BASE/" |
+  grep -oE 'FreeBSD-14\.5-RELEASE-riscv-riscv64-[^"]+' |
+  sort -u
+```
+
+Look for an installation ISO, preferably:
+
+```bash
+FreeBSD-14.5-RELEASE-riscv-riscv64-bootonly.iso
+```
+
+If the directory contains that exact file, download it:
+
+```bash
+wget "$BASE/FreeBSD-14.5-RELEASE-riscv-riscv64-bootonly.iso"
+```
+
+Check it:
+
+```
+file FreeBSD-14.5-RELEASE-riscv-riscv64-bootonly.iso
+```
+
+If no bootable ISO is listed, stop here and show me the directory listing. We should identify the supported boot path rather than guess.
+
+## 4. Prepare a virtual disk
+
+Once you have the ISO:
+
+```bash
+qemu-img create -f qcow2 freebsd-riscv.qcow2 16G
+```
+
+This creates a 16 GB virtual disk. It is a file in Codespaces, not a physical disk.
+
+Find the firmware path:
+
+```bash
+find /usr/share -type f \
+  -iname '*riscv*code*.fd' 2>/dev/null
+```
+
+If the result is:
+
+```bash
+/usr/share/qemu-efi-riscv64/RISCV_VIRT_CODE.fd
+```
+
+set:
+
+```env
+export RISCV_UEFI="/usr/share/qemu-efi-riscv64/RISCV_VIRT_CODE.fd"
+```
+
+If your firmware path is different, use the actual path returned by `find`.
+
+## 5. Start the FreeBSD RISC-V virtual machine
+
+Try this configuration:
+
+```bash
+qemu-system-riscv64 \
+  -machine virt \
+  -cpu rv64 \
+  -m 2048 \
+  -smp 2 \
+  -nographic \
+  -bios "$RISCV_UEFI" \
+  -drive file=freebsd-riscv.qcow2,format=qcow2,if=none,id=hd \
+  -device virtio-blk-device,drive=hd \
+  -drive file=FreeBSD-14.5-RELEASE-riscv-riscv64-bootonly.iso,format=raw,media=cdrom,if=none,id=cdrom \
+  -device virtio-blk-device,drive=cdrom \
+  -boot order=d
+```
+
+This is the initial QEMU configuration to test, not a guarantee that the particular release ISO supports this firmware and virtual hardware combination.
+
+If the FreeBSD installer starts, follow its installation prompts and select the 16 GB virtual disk as the installation destination. Do not select the installation media as the destination.
+
+If it does not boot, record the first error and stop. The next step will depend on whether the failure is caused by firmware, the bootloader, or device support.
+
+## 6. Verify the installation
+
+After a successful installation, restart QEMU without the ISO attached:
+
+```bash
+qemu-system-riscv64 \
+  -machine virt \
+  -cpu rv64 \
+  -m 2048 \
+  -smp 2 \
+  -nographic \
+  -bios "$RISCV_UEFI" \
+  -drive file=freebsd-riscv.qcow2,format=qcow2,if=none,id=hd \
+  -device virtio-blk-device,drive=hd
+```
+
+Inside FreeBSD, run:
+
+```uv
+uname -a
+uname -m
+sysctl hw.ncpu
+df -h
+```
+
+The architecture should report `riscv64`.
+
+## 7. Where this leads for LMLM
+
+Once FreeBSD boots, we can build the execution adapter in stages:
+
+LMLM Core
+
+Policy, orchestration, task management
+
+LMLM RISC-V Adapter
+
+Authenticated communication and execution interface
+
+QEMU RISC-V 64-bit
+
+Virtual hardware and machine emulation
+
+FreeBSD RISC-V
+
+Independent execution environment
+
+The first milestone is simply a successful FreeBSD boot. After that, we'll configure SSH, install Go, and build a small LMLM execution agent with explicit authentication and policy controls.
+
+## Your first checkpoint
+
+Run steps 1–3 and send me the terminal output for these commands:
+
+```bash
+qemu-system-riscv64 --version
+qemu-system-riscv64 -machine help
+find /usr/share -type f -iname '*riscv*.fd' 2>/dev/null
+```
+
+Also send the release directory listing.
+
+I want to verify the actual QEMU machine and firmware available in your Codespace before asking you to launch the VM. That prevents us from wasting your limited Codespaces time on an incompatible boot configuration.
